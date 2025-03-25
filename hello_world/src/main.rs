@@ -105,8 +105,31 @@ fn display() {
     println!("Debug: {:?}", point);
 }
 
+fn testcase_list() {
+    struct List(Vec<i32>);
+
+    impl fmt::Display for List {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            let vec = &self.0;
+
+            write!(f, "[")?;
+            for (idx, v) in vec.iter().enumerate() {
+                if idx != 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", v)?;
+            }
+            write!(f, "]")
+        }
+    }
+
+    let v = List(vec![1,2,3]);
+    println!("{}", v);
+}
+
 fn main() {
     formatted_print();
     debug();
     display();
+    testcase_list();
 }
