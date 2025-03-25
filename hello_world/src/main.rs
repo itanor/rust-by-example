@@ -1,3 +1,4 @@
+use std::fmt;
 
 fn formatted_print() {
     println!("{} days", 31);
@@ -56,7 +57,79 @@ fn debug() {
     println!("{:#?}", peter);
 }
 
+
+fn display() {
+    struct Structure(i32);
+    impl fmt::Display for Structure {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "{}", self.0)
+        }    
+    }
+    let st = Structure(3);
+    println!("{}", st);
+
+    #[derive(Debug)]
+    struct MinMax(i64, i64);
+    impl fmt::Display for MinMax {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "({}, {})", self.0, self.1)
+        }
+    }
+
+    #[derive(Debug)]
+    struct Point2D {
+        x: f64,
+        y: f64,
+    }
+    impl fmt::Display for Point2D {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "x: {}, y: {}", self.x, self.y)
+        }
+    }
+
+    let minmax = MinMax(0,14);
+    println!("Compare structures:");
+    println!("Display: {}", minmax);
+    println!("Debug: {:?}", minmax);
+
+    let big_range = MinMax(-300, 300);
+    let small_range = MinMax(-3, 3);
+
+    println!("The big range is {big} and the small is {small}",
+        small = small_range,
+        big = big_range);
+
+    let point = Point2D{x: 3.3, y: 7.2};
+    println!("Compare points:");
+    println!("Display {}", point);
+    println!("Debug: {:?}", point);
+}
+
+fn testcase_list() {
+    struct List(Vec<i32>);
+
+    impl fmt::Display for List {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            let vec = &self.0;
+
+            write!(f, "[")?;
+            for (idx, v) in vec.iter().enumerate() {
+                if idx != 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", v)?;
+            }
+            write!(f, "]")
+        }
+    }
+
+    let v = List(vec![1,2,3]);
+    println!("{}", v);
+}
+
 fn main() {
     formatted_print();
     debug();
+    display();
+    testcase_list();
 }
