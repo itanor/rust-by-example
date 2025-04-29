@@ -1,3 +1,5 @@
+use std::mem;
+
 fn literals_and_operators() {
     println!("1 + 2 = {}", 1u32 + 2);
 
@@ -56,6 +58,42 @@ fn tuples() {
     println!("matrix: {:?}", matrix);
 }
 
+fn analyze_slice(slice: &[i32]) {
+    println!("first element of slice: {}", slice[0]);
+    println!("slice has {} elements.", slice.len());
+}
+
+fn array_and_slices() {
+    let xs: [i32; 5] = [1, 2, 3, 4, 5];
+    let ys: [i32; 500] = [0; 500];
+
+    println!("first element of the array: {}", xs[0]);
+    println!("second element of the array: {}", xs[1]);
+    println!("number of elements ins array: {}", xs.len());
+    println!("array occupies {} bytes.", mem::size_of_val(&xs));
+
+    println!("Borrow the whole array as a slice.");
+    analyze_slice(&xs);
+
+    println!("Borrow a section of the array as a slice.");
+    analyze_slice(&ys[1 .. 4]);
+
+    let empty_array: [u32; 0] = [];
+    assert_eq!(&empty_array, &[]);
+    assert_eq!(&empty_array, &[][..]); // Same but more verbose
+
+    // Arrays can be safely accessed using `.get`, which returns an
+    // `Option`. This can be matched as shown below, or used with
+    // `.expect()` if you would like the program to exit with a nice
+    // message instead of happily continue.
+    for i in 0..xs.len()  + 1 {
+        match xs.get(i) {
+            Some(xval) => println!("{}, {}", i, xval),
+            None => println!("Slow down! {} is too far!", i),
+        }
+    }
+}
+
 fn main() {
     let logical: bool = true;
     println!("{}", logical);
@@ -85,4 +123,5 @@ fn main() {
 
     literals_and_operators();
     tuples();
+    array_and_slices();
 }
