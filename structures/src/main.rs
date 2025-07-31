@@ -41,6 +41,57 @@ fn inspect(event: WebEvent) {
     }
 }
 
+enum Stage {
+    Beginner,
+    Avanced,
+}
+
+enum Role {
+    Student,
+    Teacher,
+}
+
+fn use_of_use() {
+    use crate::Stage::{Beginner, Avanced};
+    use crate::Role::*;
+
+    // equivalent to Stage::Beginner
+    let stage = Beginner;
+
+    // equivalent to Role::Student
+    let role = Student;
+
+    match stage {
+        Beginner => println!("Beginner"),
+        Avanced => println!("Advanced"),
+    }
+
+    match role {
+        Student => println!("Student"),
+        Teacher => println!("Teacher"),
+    }
+}
+
+enum Number {
+    Zero,
+    One,
+    Two,
+}
+
+enum Color {
+    Red = 0xff0000,
+    Green = 0x00ff00,
+    Blue = 0x0000ff,
+}
+
+fn c_like_enums() {
+    println!("zero is {}", Number::Zero as i32);
+    println!("one is {}", Number::One as i32);
+
+    println!("roses are #{:06x}", Color::Red as i32);
+    println!("violets are #{:06x}", Color::Blue as i32);
+}
+
 fn main() {
     let name = String::from("Peter");
     let age = 27;
@@ -80,4 +131,7 @@ fn main() {
     inspect(click);
     inspect(load);
     inspect(unload);
+
+    use_of_use();
+    c_like_enums();
 }
