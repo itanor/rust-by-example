@@ -20,3 +20,11 @@ run-main-bin: --run-bin
 :phony: run-secondary-bin
 run-secondary-bin: BINARY=other_bin
 run-secondary-bin: --run-bin
+
+:phony: test
+test:
+	@cargo fmt && cargo test
+
+:phony: clean
+clean:
+	@cargo clean
