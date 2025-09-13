@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display};
+use std::marker::PhantomData;
 
 fn main() {
     simple_generics();
@@ -10,6 +11,10 @@ fn main() {
     multiple_bounds();
     where_clauses();
     new_type_idiom();
+    associated_items();
+    associated_types();
+    phantom_type_parameters();
+    test_case_unit_clarification();
 }
 
 fn simple_generics() {
@@ -284,3 +289,168 @@ fn new_type_idiom() {
     let Years(age_as_primitive) = age;
     println!("{}", age_as_primitive);
 }
+
+fn associated_items() {
+    struct Container(i32, i32);
+
+    trait Contains<A, B> {
+        fn contains(&self, _: &A, _: &B) -> bool; // Explicitly requires `A` and `B`
+        fn first(&self) -> i32; // Doesn't explicitly require `A` or `B`
+        fn last(&self) -> i32; // Doesn't explicitly require `A` or `B`
+    }
+
+    impl Contains<i32, i32> for Container {
+        fn contains(&self, number_1: &i32, number_2: &i32) -> bool {
+            (&self.0 == number_1) && (&self.1 == number_2)
+        }
+
+        fn first(&self) -> i32 {
+            self.0
+        }
+
+        fn last(&self) -> i32 {
+            self.1
+        }
+    }
+
+    fn difference<A, B, C>(container: &C) -> i32
+    where
+        C: Contains<A, B>,
+    {
+        container.last() - container.first()
+    }
+
+    let number_1 = 3;
+    let number_2 = 10;
+
+    let container = Container(number_1, number_2);
+
+    println!(
+        "Does container contain {} and {}: {}",
+        &number_1,
+        &number_2,
+        container.contains(&number_1, &number_2)
+    );
+
+    println!("First number: {}", container.first());
+    println!("Last number: {}", container.last());
+
+    println!("The difference is: {}", difference(&container));
+}
+
+fn associated_types() {
+    struct Container(i32, i32);
+
+    trait Contains {
+        type A;
+        type B;
+
+        fn contains(&self, number_1: &i32, number_2: &i32) -> bool;
+        fn first(&self) -> i32;
+        fn last(&self) -> i32;
+    }
+
+    impl Contains for Container {
+        type A = i32;
+        type B = i32;
+
+        fn contains(&self, number_1: &i32, number_2: &i32) -> bool {
+            (&self.0 == number_1) && (&self.1 == number_2)
+        }
+
+        fn first(&self) -> i32 {
+            self.0
+        }
+
+        fn last(&self) -> i32 {
+            self.1
+        }
+    }
+
+    fn difference<C: Contains>(container: &C) -> i32 {
+        container.last() - container.first()
+    }
+
+    let number_1 = 3;
+    let number_2 = 10;
+
+    let container = Container(number_1, number_2);
+
+    println!(
+        "Does container contain {} and {}: {}",
+        &number_1,
+        &number_2,
+        container.contains(&number_1, &number_2)
+    );
+
+    println!("First number: {}", container.first());
+    println!("Last number: {}", container.last());
+
+    println!("The difference is: {}", difference(&container));
+}
+
+fn phantom_type_parameters() {
+    #[derive(PartialEq)]
+    struct PhantomTuple<A, B>(A, PhantomData<B>);
+
+    #[derive(PartialEq)]
+    struct PhantomStruct<A, B> {
+        first: A,
+        phantom: PhantomData<B>
+    }
+
+    let _tuple1: PhantomTuple<char, f32> = PhantomTuple('Q', PhantomData);
+    let _tuple2: PhantomTuple<char, f64> = PhantomTuple('Q', PhantomData);
+
+    let _struct1: PhantomStruct<char, f32> = PhantomStruct {
+        first: 'Q',
+        phantom: PhantomData,
+    };
+    let _struct2: PhantomStruct<char, f64> = PhantomStruct {
+        first: 'Q',
+        phantom: PhantomData,
+    };
+
+    // Compile-time Error! Type mismatch so these cannot be compared:
+    // println!("_tuple1 == _tuple2 yields: {}",
+    //           _tuple1 == _tuple2);
+
+    // Compile-time Error! Type mismatch so these cannot be compared:
+    // println!("_struct1 == _struct2 yields: {}",
+    //           _struct1 == _struct2);
+}
+
+fn test_case_unit_clarification() {
+    use std::ops::Add;
+    use std::marker::PhantomData;
+
+    #[derive(Debug, Clone, Copy)]
+    enum Inch {}
+
+    #[derive(Debug, Clone, Copy)]
+    enum Mm {}
+
+    /// `f64` already implements the `Clone` and `Copy` traits.
+    #[derive(Debug, Clone, Copy)]
+    struct Length<Unit>(f64, PhantomData<Unit>);
+
+    /// The `Add` trait defines the behavior of the `+` operator.
+    impl<Unit> Add for Length<Unit> {
+        type Output = Length<Unit>;
+
+        fn add(self, rhs: Length<Unit>) -> Length<Unit> {
+            // `+` calls the `Add` implementation for `f64`
+            Length(self.0 + rhs.0, PhantomData)
+        }
+    }
+
+    let one_foot: Length<Inch> = Length(12.0, PhantomData);
+    let one_meter: Length<Mm>  = Length(1000.0, PhantomData);
+
+    let two_feet = one_foot + one_foot;
+    let two_meters = one_meter + one_meter;
+
+    println!("one foot + one foot = {:?} in", two_feet.0);
+    println!("one meter + one meter = {:?} mm", two_meters.0);
+}
+
